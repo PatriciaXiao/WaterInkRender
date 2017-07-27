@@ -1,0 +1,1050 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="The report of course CS294-26 project 3">
+		<meta name="author" content="Zhiping (Patricia) Xiao">
+		<link rel="icon" href="./img/favicon.ico">
+
+		<title>CS294-26 Project Final Project Report</title>
+		<link href="./css/bootstrap.min.css" rel="stylesheet">
+		<link href="./css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+		<link href="./css/sticky-footer-navbar.css" rel="stylesheet">
+		<link href="./css/mystyle.css" rel="stylesheet">
+
+	</head>
+
+	<body>
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="https://en.wikipedia.org/wiki/Chinese_painting">Water-Ink Rendering</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li><a href="./index.html">Home</a></li>
+						<li class="active"><a href="#">Contents</a></li>
+						<li><a href="./report_paper.html">Report</a></li>
+						<li id="links" class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Links<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="http://patriciaxiao.wixsite.com/profile">About Me</a></li>
+								<li><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa16/">Course Website</a></li>
+								<li><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa16/hw/final-project/">Assignment Page</a></li>
+								<li role="separator" class="divider"></li>
+								<li class="dropdown-header">Materials</li>
+								<li><a href="./file/PresentationSlides_Dec082016_24965096_zhiping_xiao.pdf">Presentation Slides</a></li>
+								<li><a href="./file/CS294-26-FinalReportPaper24965096.pdf">Report Paper</a></li>
+								<li role="separator" class="divider"></li>
+								<li class="dropdown-header">References</li>
+								<li><a href="./file/ChineseInkPainting.pdf">Chinese Ink Painting</a></li>
+								<li><a href="./file/Attention_Saliency.pdf">Saliency Map</a></li>
+								<li><a href="./file/winnemoeller-cag2012.pdf">XDoG Edge Detect</a></li>
+								<li><a href="http://www.tutorialspoint.com/bootstrap/">Bootstrap Tutorials</a></li>
+								<li><a href="http://getbootstrap.com/getting-started/#examples">Bootstrap Examples</a></li>
+								<li><a href="http://pst.co.jp/powersoft/html/index.php?f=3401">HTML Character</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+
+		<!-- Begin page content -->
+		<div class="container">
+			<div class="page-header" align="center">
+				<h1>Final Project Online Report</h1>
+				<h2><small>Image-Based Freehand Water-Ink Style Rendering with Color</small></h2>
+			</div>
+			<p class="lead">On this page, I will give a brief introduction of my ideas and implementation of the pipeline. For all the details, please refer to the <a href="./report_paper.html">report</a> for more explaination.</p>
+			<hr></hr>
+			<!--http://www.runoob.com/bootstrap/bootstrap-affix-plugin.html-->
+			<h2 align="center">Introduction &amp; Related Work</h2>
+			<h3 align="center"><small>what is freehand water-ink style of painting &amp; why am I doing this project</small></h3>
+			<hr></hr>
+			<p>As you might have already known, water-ink painting (also called "ink and wash", etc. at times) is the major form of traditional paintings in China, which is distinctive, has had great influence historically, and still remains popular today. Generally speaking, there are two categories of water-ink paintings. One is elaborated style (Gong Bi), the other is free-hand style. As is shown in the image <a href="#water_ink_category">Water-Ink Painting Categories</a>, the left one is elaborate-style and the right one is freehand-style.</p>
+			<p>In this project I implemented a freehand style rendering, which is harder to do for human, compared with elaborated style (see my <a href="report_paper.html">report paper</a> for details).</p>
+			<div class="container" id="water_ink_category" align="center">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/explain/categories.png','Water-Ink Painting Categories');">
+							<img src="./img/explain/categories.png" alt="Water-Ink Painting Categories">
+							<div class="caption">
+								Water-Ink Painting Categories
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<p>Just as is stated in Lixing D. et al's <a href="./file/ChineseInkPainting.pdf">paper</a>: <q>water-ink painting is a technically demanding art form that usually requires great skill, concentration, and years of training.</q> There are some, but not many existing researches about how to do water-ink rendering, but of them are 3D rendering, and most of the 2D rendering models lack color feature. They arbitrarily assumed that water-ink painting uses only water and ink, without color, but that is not true, as most of water-ink painting work contains at least one color besides ink color. In addition, there are many other feedback of their methods, some are not doing well in some steps like ink diffusion, and personally, I think they didn't make good use of the saliency map.</p>
+			<p>All in all, I believe that rendering an image to be water-ink style is a topic worth exploring.</p>
+			<hr></hr>
+			<h2 align="center">Method &amp; Results</h2>
+			<h3 align="center"><small>the method used to do rendering &amp; some of the results</small></h3>
+			<hr></hr>
+			<p>Inspired by some of the existing studies, I designed and implemented my own pipeline of rendering as is shown in the <a href="#pipeline_design">Pipeline Design</a> image.</p>
+			<p>As you can see, the saliency map plays an important role in the pipeline. Saliency map, as is stated in <a></a>, is basically a matrix that indicates how significance (tendency of popping out and being noticed) each pixel is in an image. The saliency map is calculated based on each part's intensity, color, and orientation, based on which we build a gaussian pyramid and calculate the features and the features' conspicuity at each level, and finally put the three aspects and all layers in the pyramid together to generate a matrix. This part runs really fast. Saliency map's construction is as shown below in <a href="#saliency_map">Saliency Map Construction</a>.</p>
+			<div class="container" id="pipeline_design">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/explain/report_graph.png','My Pipeline Design');">
+							<img src="./img/explain/report_graph.png" alt="Pipeline Designed">
+							<div class="caption">
+								Pipeline Design
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="saliency_map">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/explain/saliency_map.png','the Saliency Map Construction Structure');">
+							<img src="./img/explain/saliency_map.png" alt="Saliency Map Construction">
+							<div class="caption">
+								Saliency Map Construction
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<p>The pipeline could be generally divided into 4 phases (and an extra):
+				<ol>
+					<li>preparation / pre-processing: resize the image, calculate the saliency map, the blurred image and generate a saliency-aware image.</li>
+					<li>separation / abstraction: extract colors, segment the colors and re-map the colors using a piecewise quadratic function; extract edges using DoG (difference of Gaussian), add edges to the original image to create a sharpened image, apply similar method as XDoG (eXtended Difference of Gaussian) to generate the outline from edges, and generate shading from the sharpened image.</li>
+					<li>ink-diffusion / ink-spread simulation: simulate the ink's diffusion by randomly pick a nearby pixel to replace each pixel and then apply a median filter to the whole image; the range of which the nearby pixel is bounded in is dependent on the saliency map; outline, shade, and color are treated differently here.</li>
+					<li>combination / putting together: color and ink, which was separated, treated separately and mix them together to create the final result.</li>
+					<li>(*) addition / after-processing: (not necessarily included in the pipeline) although many other things, such as adding text, could be done, in this project, I just used what is implemented in <a href="https://inst.eecs.berkeley.edu/~cs194-26/fa16/upload/files/proj4g/cs194-26-add/mixed_gradient.html">project 4</a>, the mixed gradient rendering, using result image from the pipeline as the source image and a manually-created texture background as the target image, to calculate the result.</li>
+				</ol>
+			</p>
+			<p>Generally speaking, the pipeline works out fine. Here's some of the outcomes:</p>
+			<div class="container" id="GuiLin_1">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_resized.jpg','Resized Image');">
+								<img src="./img/data/GuiLin_1/guilin_1_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_saliency.jpg','Saliency Map');">
+								<img src="./img/data/GuiLin_1/guilin_1_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_blurred.jpg','Blurred Image');">
+								<img src="./img/data/GuiLin_1/guilin_1_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/GuiLin_1/guilin_1_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/GuiLin_1/guilin_1_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/GuiLin_1/guilin_1_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_edge.jpg','Extracted Shading');">
+								<img src="./img/data/GuiLin_1/guilin_1_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/GuiLin_1/guilin_1_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_outline.jpg','Extracted Outline');">
+								<img src="./img/data/GuiLin_1/guilin_1_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/GuiLin_1/guilin_1_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_1/guilin_1_final.jpg','Final Result');">
+							<img src="./img/data/GuiLin_1/guilin_1_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="GuiLin_2">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_resized.jpeg','Resized Image');">
+								<img src="./img/data/GuiLin_2/guilin_2_resized.jpeg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_saliency.jpeg','Saliency Map');">
+								<img src="./img/data/GuiLin_2/guilin_2_saliency.jpeg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_blurred.jpeg','Blurred Image');">
+								<img src="./img/data/GuiLin_2/guilin_2_blurred.jpeg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_saliaware.jpeg','Saliency-Aware Image');">
+							<img src="./img/data/GuiLin_2/guilin_2_saliaware.jpeg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_segment.jpeg','Abstracted & Remapped Color');">
+								<img src="./img/data/GuiLin_2/guilin_2_segment.jpeg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_color.jpeg','Ink-Diffused Color');">
+								<img src="./img/data/GuiLin_2/guilin_2_color.jpeg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_edge.jpeg','Extracted Shading');">
+								<img src="./img/data/GuiLin_2/guilin_2_edge.jpeg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_diffedge.jpeg','Ink-Diffused Shading');">
+								<img src="./img/data/GuiLin_2/guilin_2_diffedge.jpeg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_outline.jpeg','Extracted Outline');">
+								<img src="./img/data/GuiLin_2/guilin_2_outline.jpeg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_diffline.jpeg','Ink-Diffused Outline');">
+								<img src="./img/data/GuiLin_2/guilin_2_diffline.jpeg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_2/guilin_2_final.jpeg','Final Result');">
+							<img src="./img/data/GuiLin_2/guilin_2_final.jpeg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="GuiLin_3">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_resized.jpg','Resized Image');">
+								<img src="./img/data/GuiLin_3/guilin_3_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_saliency.jpg','Saliency Map');">
+								<img src="./img/data/GuiLin_3/guilin_3_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_blurred.jpg','Blurred Image');">
+								<img src="./img/data/GuiLin_3/guilin_3_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/GuiLin_3/guilin_3_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/GuiLin_3/guilin_3_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/GuiLin_3/guilin_3_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_edge.jpg','Extracted Shading');">
+								<img src="./img/data/GuiLin_3/guilin_3_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/GuiLin_3/guilin_3_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_outline.jpg','Extracted Outline');">
+								<img src="./img/data/GuiLin_3/guilin_3_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/GuiLin_3/guilin_3_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/GuiLin_3/guilin_3_final.jpg','Final Result');">
+							<img src="./img/data/GuiLin_3/guilin_3_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="Mountain_1">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_resized.jpg','Resized Image');">
+								<img src="./img/data/Mountain_1/mountain_1_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_saliency.jpg','Saliency Map');">
+								<img src="./img/data/Mountain_1/mountain_1_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_blurred.jpg','Blurred Image');">
+								<img src="./img/data/Mountain_1/mountain_1_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/Mountain_1/mountain_1_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/Mountain_1/mountain_1_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/Mountain_1/mountain_1_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_edge.jpg','Extracted Shading');">
+								<img src="./img/data/Mountain_1/mountain_1_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/Mountain_1/mountain_1_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_outline.jpg','Extracted Outline');">
+								<img src="./img/data/Mountain_1/mountain_1_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/Mountain_1/mountain_1_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_1/mountain_1_final.jpg','Final Result');">
+							<img src="./img/data/Mountain_1/mountain_1_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="Mountain_3">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_resized.jpg','Resized Image');">
+								<img src="./img/data/Mountain_3/mountain_3_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_saliency.jpg','Saliency Map');">
+								<img src="./img/data/Mountain_3/mountain_3_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_blurred.jpg','Blurred Image');">
+								<img src="./img/data/Mountain_3/mountain_3_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/Mountain_3/mountain_3_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/Mountain_3/mountain_3_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/Mountain_3/mountain_3_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_edge.jpg','Extracted Shading');">
+								<img src="./img/data/Mountain_3/mountain_3_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/Mountain_3/mountain_3_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_outline.jpg','Extracted Outline');">
+								<img src="./img/data/Mountain_3/mountain_3_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/Mountain_3/mountain_3_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_3/mountain_3_final.jpg','Final Result');">
+							<img src="./img/data/Mountain_3/mountain_3_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="Mountain_5">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_resized.jpg','Resized Image');">
+								<img src="./img/data/Mountain_5/mountain_5_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_saliency.jpg','Saliency Map');">
+								<img src="./img/data/Mountain_5/mountain_5_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_blurred.jpg','Blurred Image');">
+								<img src="./img/data/Mountain_5/mountain_5_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/Mountain_5/mountain_5_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/Mountain_5/mountain_5_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/Mountain_5/mountain_5_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_edge.jpg','Extracted Shading');">
+								<img src="./img/data/Mountain_5/mountain_5_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/Mountain_5/mountain_5_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_outline.jpg','Extracted Outline');">
+								<img src="./img/data/Mountain_5/mountain_5_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/Mountain_5/mountain_5_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Mountain_5/mountain_5_final.jpg','Final Result');">
+							<img src="./img/data/Mountain_5/mountain_5_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="Snow_1">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_resized.jpg','Resized Image');">
+								<img src="./img/data/Snow_1/snow_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_saliency.jpg','Saliency Map');">
+								<img src="./img/data/Snow_1/snow_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_blurred.jpg','Blurred Image');">
+								<img src="./img/data/Snow_1/snow_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/Snow_1/snow_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/Snow_1/snow_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/Snow_1/snow_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_edge.jpg','Extracted Shading');">
+								<img src="./img/data/Snow_1/snow_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/Snow_1/snow_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_outline.jpg','Extracted Outline');">
+								<img src="./img/data/Snow_1/snow_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/Snow_1/snow_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Snow_1/snow_final.jpg','Final Result');">
+							<img src="./img/data/Snow_1/snow_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="container" id="Water_1">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-3 col-md-3" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_resized.jpg','Resized Image');">
+								<img src="./img/data/Water_1/water_resized.jpg" alt="Resized Image">
+								<div class="caption">
+									Resized Image
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_saliency.jpg','Saliency Map');">
+								<img src="./img/data/Water_1/water_saliency.jpg" alt="Saliency Map">
+								<div class="caption">
+									Saliency Map
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_blurred.jpg','Blurred Image');">
+								<img src="./img/data/Water_1/water_blurred.jpg" alt="Blurred Image">
+								<div class="caption">
+									Blurred Image
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-9 col-md-9" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_saliaware.jpg','Saliency-Aware Image');">
+							<img src="./img/data/Water_1/water_saliaware.jpg" alt="Saliency-Aware Image">
+							<div class="caption">
+								Saliency-Aware Image
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_segment.jpg','Abstracted & Remapped Color');">
+								<img src="./img/data/Water_1/water_segment.jpg" alt="Abstracted & Remapped Color">
+								<div class="caption">
+									Abstracted &amp; Remapped Color
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_color.jpg','Ink-Diffused Color');">
+								<img src="./img/data/Water_1/water_color.jpg" alt="Ink-Diffused Color">
+								<div class="caption">
+									Ink-Diffused Color
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_edge.jpg','Extracted Shading');">
+								<img src="./img/data/Water_1/water_edge.jpg" alt="Extracted Shading">
+								<div class="caption">
+									Extracted Shading
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_diffedge.jpg','Ink-Diffused Shading');">
+								<img src="./img/data/Water_1/water_diffedge.jpg" alt="Ink-Diffused Shading">
+								<div class="caption">
+									Ink-Diffused Shading
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_outline.jpg','Extracted Outline');">
+								<img src="./img/data/Water_1/water_outline.jpg" alt="Extracted Outline">
+								<div class="caption">
+									Extracted Outline
+								</div>
+							</a>
+						</div>
+						<div class = "row">
+							<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_diffline.jpg','Ink-Diffused Outline');">
+								<img src="./img/data/Water_1/water_diffline.jpg" alt="Ink-Diffused Outline">
+								<div class="caption">
+									Ink-Diffused Outline
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_final.jpg','Final Result');">
+							<img src="./img/data/Water_1/water_final.jpg" alt="Final Result">
+							<div class="caption">
+								Final Result
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<p>Besides, there's an optional additional step (phase 5): adding paper texture to the image. For now, the system couldn't automatically generate paper texture, neither could it extract features from paper texture and apply them directly to the image. As is mentioned previously, user need to create a texture background manually and it'll be applied to the image by mixed gradient, with source image the result and target image the paper. By the way: it could also be treated this way - source image is the texture and target image the result. An example of both outcomes are showed below: </p>
+			<div class="container" id="texture">
+				<div class = "row">
+					<div class="col-xs-6 col-sm-6 col-md-6" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_final.jpg','Result Image');">
+							<img src="./img/data/Water_1/water_final.jpg" alt="Result Image">
+							<div class="caption">
+								Result Image
+							</div>
+						</a>
+					</div>
+					<div class="col-xs-6 col-sm-6 col-md-6" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/background_water_1.jpg','Texture Reference');">
+							<img src="./img/data/Water_1/background_water_1.jpg" alt="Texture Reference">
+							<div class="caption">
+								Texture Reference
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_texture.jpg','Apply Result (src) to Texture (dst)');">
+							<img src="./img/data/Water_1/water_texture.jpg" alt="Apply Result (src) to Texture (dst)">
+							<div class="caption">
+								Apply Result (src) to Texture (dst)
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_texture2.jpg','Apply Texture (src) to Result (dst)');">
+							<img src="./img/data/Water_1/water_texture2.jpg" alt="Apply Texture (src) to Result (dst)">
+							<div class="caption">
+								Apply Texture (src) to Result (dst)
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<p>I personally prefer the former one (applying result to texture), since it looks like drawing on the piece of paper. That's why I used this method in my code, instead of the other one. But if you prefer the other way, just feel free to modify my code by simpley switching the source and target image.</p>
+
+			<hr></hr>
+			<h2 align="center">Conclusion &amp; Future Works</h2>
+			<h3 align="center"><small>discuss the performance of the temporary version &amp; look into what to do next</small></h3>
+			<hr></hr>
+			<p>In this project, I successfully implemented a system that takes in an image and transfer it into a free-hand water-ink style image, with color, and paper texture (optional).</p>
+			<p>By increasing the significance of ink usage and decreasing the significance of color, the system managed to get rid of the watercolor style outcomes, which once happened to some of the input images with dark colors.</p>
+			<p>The outcome is quite pleasing, I’m quite sure that this system could do much better than most people. On the other hand, not surprisingly, it is not good enough to be compared with human experts.</p>
+			<p>Except for the succeed attempts I made, which are described in detail in the Method section, there are also some attempts ended up in failure, such as applying seam carving to the original image (it just drive the layout away from water-ink style since in water-ink paintings empty space is even more important than the focused items), try definding a water-ink specified color set (no enough data, and no significant distinction from other paints).</p>
+			<p>There are some possible future works that are likely to be effective, such as introducing machine learning into the system to abstract features, improve its performance in "detailed" paintings such as portrait - while still remains water-color style (something should be done to the edges to abstract them and smooth them), or improving the simple color-mapping method I'm using for now (I bet there should be better solutions).</p>
+			<br>
+		</div>
+
+		<footer class="footer">
+			<div class="container">
+				<p class="text-muted">CS194-26 (CS294-26): Image Manipulation and Computational Photography Project #Final</p>
+			</div>
+		</footer>
+
+		<!--modale-->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content" align="center">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" 
+								aria-hidden="true">exit
+						</button>
+						<h4 class="modal-title" id="myModalLabel">
+							Modal
+						</h4>
+					</div>
+					<div class="modal-body">
+						<img src="" class="img-responsive" id="myModalImage">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="./js/myfunctions.js"></script>
+
+		<script src="./js/jquery.min.js"></script>
+		<script src="./js/bootstrap.min.js"></script>
+		<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+		<script src="./js/ie-emulation-modes-warning.js"></script>
+		<script src="./js/ie10-viewport-bug-workaround.js"></script>
+	</body>
+</html>

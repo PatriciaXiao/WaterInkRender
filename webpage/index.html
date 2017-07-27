@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="The report of course CS294-26 project 3">
+		<meta name="author" content="Zhiping (Patricia) Xiao">
+		<link rel="icon" href="./img/favicon.ico">
+
+		<title>CS294-26 Project Final Project Report</title>
+		<link href="./css/bootstrap.min.css" rel="stylesheet">
+		<link href="./css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+		<link href="./css/sticky-footer-navbar.css" rel="stylesheet">
+		<link href="./css/mystyle.css" rel="stylesheet">
+	</head>
+
+	<body>
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="https://en.wikipedia.org/wiki/Chinese_painting">Water-Ink Rendering</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li class="active"><a href="#">Home</a></li>
+						<li><a href="./contents.html">Contents</a></li>
+						<li><a href="./report_paper.html">Report</a></li>
+						<li id="links" class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Links<span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="http://patriciaxiao.wixsite.com/profile">About Me</a></li>
+								<li><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa16/">Course Website</a></li>
+								<li><a href="https://inst.eecs.berkeley.edu/~cs194-26/fa16/hw/final-project/">Assignment Page</a></li>
+								<li role="separator" class="divider"></li>
+								<li class="dropdown-header">Materials</li>
+								<li><a href="./file/PresentationSlides_Dec082016_24965096_zhiping_xiao.pdf">Presentation Slides</a></li>
+								<li><a href="./file/CS294-26-FinalReportPaper24965096.pdf">Report Paper</a></li>
+								<li role="separator" class="divider"></li>
+								<li class="dropdown-header">References</li>
+								<li><a href="./file/ChineseInkPainting.pdf">Chinese Ink Painting</a></li>
+								<li><a href="./file/Attention_Saliency.pdf">Saliency Map</a></li>
+								<li><a href="./file/winnemoeller-cag2012.pdf">XDoG Edge Detect</a></li>
+								<li><a href="http://www.tutorialspoint.com/bootstrap/">Bootstrap Tutorials</a></li>
+								<li><a href="http://getbootstrap.com/getting-started/#examples">Bootstrap Examples</a></li>
+								<li><a href="http://pst.co.jp/powersoft/html/index.php?f=3401">HTML Character</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+
+		<!-- Begin page content -->
+		<div class="container">
+			<div class="page-header" align="center">
+				<h1>Image-Based Freehand Water-Ink Style Rendering with Color</h1>
+				<h2><small>CS194-26 (CS294-26): Image Manipulation and Computational Photography Final Project</small></h2>
+				<h2><small>Author: Zhiping Xiao (SID 24965096)</small></h2>
+			</div>
+			<div class="container" id="pipeline">
+				<div class = "row">
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_resized.jpg','Sample input: foggy river');">
+							<img src="./img/data/Water_1/water_resized.jpg" alt="Pipeline Designed">
+							<div class="caption">
+								Sample Input
+							</div>
+						</a>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_final.jpg','Sample Output: foggy river');">
+							<img src="./img/data/Water_1/water_final.jpg" alt="Sample Output">
+							<div class="caption">
+								Sample Output
+							</div>
+						</a>
+					</div>
+					<div class="col-xs-12 col-sm-4 col-md-4" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/data/Water_1/water_texture.jpg','Sample Paper Texture Added: foggy river');">
+							<img src="./img/data/Water_1/water_texture.jpg" alt="Sample Paper Texture Added">
+							<div class="caption">
+								Sample Paper Texture Added
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class = "row">
+					<div class="col-xs-12 col-sm-12 col-md-12" align="center">
+						<a class="thumbnail" onclick="ShowImg('./img/explain/report_graph.png','My Pipeline Design');">
+							<img src="./img/explain/report_graph.png" alt="Pipeline Designed">
+							<div class="caption">
+								Pipeline Design
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<p class="lead">This is my final project's report of UCB CS294-26, Image Manipulation and Computational Photography, fall semester 2016. As a brief introduction, in this project, I implemented a pipeline that takes in an image and render it to be (freehand) water-ink style image. My <a href="./file/PresentationSlides_Dec082016_24965096_zhiping_xiao.pdf">slides</a> of presentation on December the eighth, 2016, and the <a href="./file/CS294-26-FinalReportPaper24965096.pdf">final report paper</a> are available. Most of the details are discussed in the paper, while in case the paper is too long to be readable, I also provided an <a href="./contents.html">online brief</a> of it.</p>
+			<p class="lead">To learn more about me, the project, or the webpage, refer to the <a href="#links">Links</a> on top of the screen. To view my project in details just click the navbars.</p>
+			<p class="lead">The code is implemented in Python and submitted on bCourse.</p>
+		</div>
+
+		<!--div class="container">
+			<div class = "row">
+				<div class="col-xs-6 col-sm-6 col-md-6" align="center">
+					<a class="thumbnail" onclick="ShowImg('./img/part0/BrigitteLinChing-Hsia.jpg','Cal1Card Center');">
+						<img src="./img/part0/BrigitteLinChing-Hsia.jpg" alt="Cal1Card Center">
+						<div class="caption">
+							<p>Cal1card Center</p>
+						</div>
+					</a>
+				</div>
+				<div class="col-xs-6 col-sm-6 col-md-6" align="center">
+					<a class="thumbnail" onclick="ShowImg('./img/part0/BjornAndresen.jpg','Cal1Card Center');">
+						<img src="./img/part0/BjornAndresen.jpg" alt="Cal1Card Center">
+						<div class="caption">
+							<p>Cal1card Center (1.5mm, 30s, F18)</p>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div-->
+
+		<footer class="footer">
+			<div class="container">
+				<p class="text-muted">CS194-26 (CS294-26): Image Manipulation and Computational Photography Project #Final</p>
+			</div>
+		</footer>
+
+		<!--modale-->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content" align="center">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" 
+								aria-hidden="true">exit
+						</button>
+						<h4 class="modal-title" id="myModalLabel">
+							Modal
+						</h4>
+					</div>
+					<div class="modal-body">
+						<img src="" class="img-responsive" id="myModalImage">
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="./js/myfunctions.js"></script>
+
+		<script src="./js/jquery.min.js"></script>
+		<script src="./js/bootstrap.min.js"></script>
+		<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+		<script src="./js/ie-emulation-modes-warning.js"></script>
+		<script src="./js/ie10-viewport-bug-workaround.js"></script>
+	</body>
+</html>
